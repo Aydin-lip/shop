@@ -29,7 +29,7 @@ const Dashboard = ({products}: {products: IProducts[]}) => {
   )
 }
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async () => {
   let products = []
   try {
     const res = await getAllProduct()

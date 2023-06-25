@@ -15,7 +15,7 @@ const index = ({products}: {products: IProducts[]}) => {
   )
 }
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async () => {
   let products = []
   try {
     let productRes = await getAllProduct()

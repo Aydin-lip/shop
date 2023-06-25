@@ -41,7 +41,7 @@ const Home = ({ collections, products }: { collections: ICollection[], products:
   )
 }
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async () => {
   let collections = []
   let products = []
   try {

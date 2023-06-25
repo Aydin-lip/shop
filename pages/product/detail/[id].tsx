@@ -110,7 +110,7 @@ const Detail = ({ products, productID }: { products: IProducts[], productID: IPr
 }
 
 
-export const getStaticProps: GetStaticProps = async (context) => {
+export const getServerSideProps: GetStaticProps = async (context) => {
   let products: IProducts[] = []
   let id = context.params?.id
   try {
