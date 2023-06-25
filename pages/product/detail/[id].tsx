@@ -110,7 +110,7 @@ const Detail = ({ products, productID }: { products: IProducts[], productID: IPr
 }
 
 
-export const getServerSideProps: GetStaticProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   let products: IProducts[] = []
   let id = context.params?.id
   try {
@@ -134,19 +134,19 @@ export const getServerSideProps: GetStaticProps = async (context) => {
   }
 }
 
-export const getStaticPaths = async () => {
-  let products: IProducts[] = []
-  try {
-    let productRes = await getAllProduct()
-    products = productRes.data.products
-  } catch (err) { }
+// export const getStaticPaths = async () => {
+//   let products: IProducts[] = []
+//   try {
+//     let productRes = await getAllProduct()
+//     products = productRes.data.products
+//   } catch (err) { }
 
-  let paths = products.map(p => ({ params: { id: p._id } }))
+//   let paths = products.map(p => ({ params: { id: p._id } }))
 
-  return {
-    paths,
-    fallback: 'blocking'
-  }
-}
+//   return {
+//     paths,
+//     fallback: 'blocking'
+//   }
+// }
 
 export default Detail
