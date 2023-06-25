@@ -8,10 +8,10 @@ import Details from '@/components/detail/details';
 import Review from '@/components/detail/tabs/review';
 import Description from '@/components/detail/tabs/description';
 import TrendingProducts from '@/components/home/trending';
-import { getAllProduct } from '@/services/http.service';
 import IProducts from '@/models/products';
 import { useRouter } from 'next/router';
-import { GetServerSideProps, GetStaticProps } from 'next';
+import { GetStaticProps } from 'next';
+import ConnectionJSON from '@/db/json';
 
 function a11yProps(index: number) {
   return {
@@ -110,14 +110,9 @@ const Detail = ({ products, productID }: { products: IProducts[], productID: IPr
 }
 
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let products: IProducts[] = []
+export const getStaticProps: GetStaticProps = async (context) => {
+  let products: IProducts[] = await ConnectionJSON('products')
   let id = context.params?.id
-  try {
-    let productRes = await getAllProduct()
-    products = productRes.data.products
-  } catch (err) { }
-
   let productID = products.filter(p => p._id === id)[0]
 
   if (!productID) {
@@ -134,19 +129,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 }
 
-// export const getStaticPaths = async () => {
-//   let products: IProducts[] = []
-//   try {
-//     let productRes = await getAllProduct()
-//     products = productRes.data.products
-//   } catch (err) { }
+export const getStaticPaths = async () => {
+  let products: IProducts[] = await ConnectionJSON('products')
+  let paths = products.map(p => ({ params: { id: p._id } }))
 
-//   let paths = products.map(p => ({ params: { id: p._id } }))
-
-//   return {
-//     paths,
-//     fallback: 'blocking'
-//   }
-// }
+  return {
+    paths,
+    fallback: 'blocking'
+  }
+}
 
 export default Detail

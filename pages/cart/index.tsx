@@ -5,9 +5,9 @@ import RelatedProduct from "@/components/cart/related";
 import StepperCart from "@/components/cart/stepper";
 import Layout from "@/components/layout";
 import { useAppContext } from "@/context/state";
+import ConnectionJSON from "@/db/json";
 import IProducts from "@/models/products";
 import { Heading5 } from "@/mui/customize";
-import { getAllProduct } from "@/services/http.service";
 import { useState } from "react";
 
 const Cart = ({ products }: { products: IProducts[] }) => {
@@ -41,12 +41,8 @@ const Cart = ({ products }: { products: IProducts[] }) => {
   )
 }
 
-export const getServerSideProps = async () => {
-  let products = []
-  try {
-    const res = await getAllProduct()
-    products = res.data.products
-  } catch (err) { }
+export const getStaticProps = async () => {
+  let products: IProducts[] = await ConnectionJSON('products')
 
   return {
     props: {
