@@ -7,8 +7,7 @@ import Layout from "@/components/layout";
 import ICollection from "@/models/collection";
 import IProducts from "@/models/products";
 import { useRouter } from "next/router";
-import getAllCollections from "@/db/collections";
-import getAllProducts from "@/db/products";
+import ConnectionJSON from "@/db/json";
 
 const Home = ({ collections, products }: { collections: ICollection[], products: IProducts[] }) => {
   const router = useRouter()
@@ -43,8 +42,8 @@ const Home = ({ collections, products }: { collections: ICollection[], products:
 }
 
 export const getStaticProps = async () => {
-  let collections = await getAllCollections()
-  let products = await getAllProducts()
+  let collections: ICollection[] = await ConnectionJSON('collection')
+  let products: IProducts[] = await ConnectionJSON('products')
 
   return {
     props: {
