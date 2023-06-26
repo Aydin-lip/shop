@@ -1,4 +1,3 @@
-import ConnectionJSON from "@/db/json";
 import UsersCollection from "@/db/users";
 import { NextApiHandler } from "next";
 
@@ -11,24 +10,17 @@ const Handler: NextApiHandler = async (req, res) => {
   }
 
   let { collectionToken, collectionInfo } = await UsersCollection()
-  let userInfo = await collectionInfo.find(ci => ci.token === token)
+  let userInfoAll = await collectionInfo.find({ token }).toArray()
+  let userInfo = userInfoAll[0]
 
   if (userInfo) {
     let allAddress = userInfo.cart.address
-    if (allAddress.find(a => String(a.id) === id)) {
-      allAddress = allAddress.filter(a => String(a.id) !== id)
 
-      let newUserInfo = {
-        ...userInfo,
-        cart: {
-          ...userInfo.cart,
-          address: allAddress
-        }
-      }
-      let filterCollectionInfo = collectionInfo.filter(ci => ci._id !== userInfo?._id)
-      filterCollectionInfo.push(newUserInfo)
+    if (allAddress.find(b => b.id == id)) {
+      allAddress = allAddress.filter(b => b.id != id)
+
       try {
-        await ConnectionJSON("usersInfo", filterCollectionInfo)
+        await collectionInfo.updateOne({ token }, { $set: { cart: { ...userInfo.cart, address: allAddress } } })
         res.status(200).json({ message: `This ID (${id}) has been successfully deleted from your address`, address: allAddress })
       } catch (err) {
         res.status(500).json({ message: "have a problem in database!" })

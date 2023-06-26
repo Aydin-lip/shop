@@ -1,4 +1,3 @@
-import ConnectionJSON from "@/db/json";
 import UsersCollection from "@/db/users";
 import { NextApiHandler } from "next";
 
@@ -11,30 +10,20 @@ const Handler: NextApiHandler = async (req, res) => {
   }
 
   let { collectionToken, collectionInfo } = await UsersCollection()
-  let userInfo = await collectionInfo.find(ci => ci.token === token)
+  let getUserInfo = await collectionInfo.find({ token }).toArray()
+  let userInfo = getUserInfo[0]
 
   if (userInfo) {
     let allBag = userInfo.cart.bag
 
-    if (allBag.find(a => String(a.id) === id)) {
-      allBag = allBag.filter(a => String(a.id) != id)
+    if (allBag.find(b => b.id == id)) {
+      allBag = allBag.filter(b => b.id != id)
 
-      if (userInfo) {
-        let newUserInfo = {
-          ...userInfo,
-          cart: {
-            ...userInfo.cart,
-            bag: allBag
-          }
-        }
-        let filterCollectionInfo = collectionInfo.filter(ci => ci._id !== userInfo?._id)
-        filterCollectionInfo.push(newUserInfo)
-        try {
-          await ConnectionJSON("usersInfo", filterCollectionInfo)
-          res.status(200).json({ message: `This ID (${id}) has been successfully deleted from your bag`, bag: allBag })
-        } catch (err) {
-          res.status(500).json({ message: "have a problem in database!" })
-        }
+      try {
+        await collectionInfo.updateOne({ token }, { $set: { cart: { ...userInfo.cart, bag: allBag } } })
+        res.status(200).json({ message: `This ID (${id}) has been successfully deleted from your bag`, bag: allBag })
+      } catch (err) {
+        res.status(500).json({ message: "have a problem in database!" })
       }
 
     } else {

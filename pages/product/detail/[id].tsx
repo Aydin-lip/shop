@@ -11,7 +11,7 @@ import TrendingProducts from '@/components/home/trending';
 import IProducts from '@/models/products';
 import { useRouter } from 'next/router';
 import { GetStaticProps } from 'next';
-import ConnectionJSON from '@/db/json';
+import CollectionDB from '@/db/mongoDB';
 
 function a11yProps(index: number) {
   return {
@@ -111,9 +111,11 @@ const Detail = ({ products, productID }: { products: IProducts[], productID: IPr
 
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  let products: IProducts[] = await ConnectionJSON('products')
+  let product = await CollectionDB("product")
+  let products = await product.find({}).toArray()
+
   let id = context.params?.id
-  let productID = products.filter(p => p._id === id)[0]
+  let productID = products.filter(p => p._id.toHexString() === id)[0]
 
   if (!productID) {
     return {
@@ -130,8 +132,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
 }
 
 export const getStaticPaths = async () => {
-  let products: IProducts[] = await ConnectionJSON('products')
-  let paths = products.map(p => ({ params: { id: p._id } }))
+  let product = await CollectionDB("product")
+  let products = await product.find({}).toArray()
+
+  let paths = products.map(p => ({ params: { id: p._id.toHexString() } }))
 
   return {
     paths,

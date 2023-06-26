@@ -1,4 +1,3 @@
-import ConnectionJSON from "@/db/json";
 import UsersCollection from "@/db/users";
 import { NextApiHandler } from "next";
 
@@ -10,21 +9,14 @@ const Handler: NextApiHandler = async (req, res) => {
   }
 
   let { collectionToken, collectionInfo } = await UsersCollection()
-  let userInfo = await collectionInfo.find(ci => ci.token === token)
+  let getUserInfo = await collectionInfo.find({ token }).toArray()
+  let userInfo = getUserInfo[0]
 
   if (userInfo) {
-    let newUserInfo = {
-      ...userInfo,
-      cart: {
-        ...userInfo.cart,
-        bag: []
-      }
-    }
-    let filterCollectionInfo = collectionInfo.filter(ci => ci._id !== userInfo?._id)
-    filterCollectionInfo.push(newUserInfo)
+
     try {
-      await ConnectionJSON('usersInfo', filterCollectionInfo)
-      res.status(200).json({ message: `All bag has been successfully deleted from your bag`, bag: [] })
+      await collectionInfo.updateOne({ token }, { $set: { cart: { ...userInfo.cart, bag: [] } } })
+      res.status(200).json({ message: `All products have been removed from your bag`, bag: [] })
     } catch (err) {
       res.status(500).json({ message: "have a problem in database!" })
     }

@@ -2,8 +2,6 @@ import * as bcrypt from "bcrypt"
 import { NextApiHandler } from "next";
 import { uuid } from "uuidv4";
 import UsersCollection from "@/db/users";
-import ConnectionJSON from "@/db/json";
-import cryptoRandomString from "crypto-random-string";
 
 const Handler: NextApiHandler = async (req, res) => {
   if (req.method === "POST") {
@@ -15,23 +13,25 @@ const Handler: NextApiHandler = async (req, res) => {
 
     let { collectionToken, collectionInfo } = await UsersCollection()
 
+    let getUserTokenByEmail = await collectionToken.find({ email }).toArray()
+    if (getUserTokenByEmail[0]) {
+      res.status(400).json({ message: "There is already an account with this email" })
+      return
+    }
+
     let token: string = uuid()
     let passHash = await bcrypt.hash(password, 10)
     let date = new Date()
     let today = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`
-    let _id = cryptoRandomString({length: 24})
 
     let userToken = {
-      _id,
       email,
       password: passHash,
       token
     }
     let userInfo = {
-      _id,
       profile: {
         fullname,
-        email,
         phone,
         category: ["Women"],
         style: ["Basic", "Sport", "Party"]
@@ -61,12 +61,9 @@ const Handler: NextApiHandler = async (req, res) => {
       token
     }
 
-    collectionToken.push(userToken)
-    collectionInfo.push(userInfo)
-
     try {
-      await ConnectionJSON('usersInfo', collectionInfo)
-      await ConnectionJSON('usersToken', collectionToken)
+      await collectionToken.insertOne(userToken)
+      await collectionInfo.insertOne(userInfo)
       res.status(201).json({
         message: "Your account has been successfully created", user: {
           ...userInfo,
@@ -79,6 +76,7 @@ const Handler: NextApiHandler = async (req, res) => {
     } catch (err) {
       res.status(500).json({ message: "Your account was not created with these specifications" })
     }
+
   } else {
     res.status(400).json({ message: "method is false." })
   }

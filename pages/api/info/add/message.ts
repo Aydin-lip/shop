@@ -1,4 +1,3 @@
-import ConnectionJSON from "@/db/json";
 import UsersCollection from "@/db/users";
 import { IMessage } from "@/models/user";
 import { NextApiHandler } from "next";
@@ -19,13 +18,12 @@ const Handler: NextApiHandler = async (req, res) => {
       return
     }
     let { collectionToken, collectionInfo } = await UsersCollection()
-    let userInfo = collectionInfo.find(ci => ci.token === token_user)
-
+    let userInfoAll = await collectionInfo.find({ token: token_user }).toArray()
+    let userInfo = userInfoAll[0]
     if (userInfo) {
       let date = new Date()
       let today = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`
       let allMessage: IMessage[] = userInfo.messages
-
       let newMessage: IMessage = {
         id: allMessage[allMessage.length - 1] ? allMessage[allMessage.length - 1].id + 1 : 1,
         title,
@@ -35,15 +33,8 @@ const Handler: NextApiHandler = async (req, res) => {
         urlText: urlText ? urlText : ''
       }
       allMessage.push(newMessage)
-      let newUserInfo = {
-        ...userInfo,
-        messages: allMessage
-      }
-      let filterCollectionInfo = collectionInfo.filter(ci => ci._id !== userInfo?._id)
-      filterCollectionInfo.push(newUserInfo)
-
       try {
-        await ConnectionJSON('usersInfo', filterCollectionInfo)
+        await collectionInfo.updateOne({ token: token_user }, { $set: { messages: allMessage } })
         res.status(200).json({ message: "Your message has been successfully sent" })
       } catch (err) {
         res.status(500).json({ message: "have a problem in database!" })

@@ -9,10 +9,11 @@ const Handler: NextApiHandler = async (req, res) => {
       res.status(400).json({ message: "One of the parameters is wrong!" })
       return
     }
+
     let {collectionToken, collectionInfo} = await UsersCollection()
 
-    let userToken = collectionToken.find(ct => ct.email === email)
-
+    let getUserToken = await collectionToken.find({ email }).toArray()
+    let userToken = getUserToken[0]
     if (userToken) {
       bcrypt.compare(password, userToken?.password, async (err, hash) => {
         if (err) {
@@ -20,8 +21,10 @@ const Handler: NextApiHandler = async (req, res) => {
           return
         }
         if (hash) {
-          let userInfo = await collectionInfo.find(ci => ci.token === userToken?.token)
-          res.status(200).json({ message: "Success", user: userInfo })
+          let getUserInfo = await collectionInfo.find({ token: userToken?.token }).toArray()
+          let userInfo = getUserInfo[0]
+          res.status(200).json({ message: "Success", user: {...userInfo, profile: {...userInfo.profile, email: userToken?.email}} })
+
         } else {
           res.status(404).json({ message: "password is false." })
         }

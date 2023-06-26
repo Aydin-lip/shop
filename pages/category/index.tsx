@@ -1,7 +1,7 @@
 import Filters from "@/components/category/Filters";
 import ListCart from "@/components/category/ListCart";
 import Layout from "@/components/layout";
-import ConnectionJSON from "@/db/json";
+import CollectionDB from "@/db/mongoDB";
 import IProducts from "@/models/products";
 
 const index = ({products}: {products: IProducts[]}) => {
@@ -16,7 +16,8 @@ const index = ({products}: {products: IProducts[]}) => {
 }
 
 export const getStaticProps = async () => {
-  let products: IProducts[] = await ConnectionJSON('products')
+  let product = await CollectionDB("product")
+  let products = await product.find({}).toArray()
 
   return {
     props: {

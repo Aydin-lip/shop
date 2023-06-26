@@ -1,4 +1,3 @@
-import ConnectionJSON from "@/db/json";
 import UsersCollection from "@/db/users";
 import { NextApiHandler } from "next";
 
@@ -15,8 +14,8 @@ const Handler: NextApiHandler = async (req, res) => {
       return
     }
     let { collectionToken, collectionInfo } = await UsersCollection()
-    let userInfo = await collectionInfo.find(ci => ci.token === token)
-
+    let userInfoAll = await collectionInfo.find({ token }).toArray()
+    let userInfo = userInfoAll[0]
     if (userInfo) {
       let favorites: string[] = userInfo.favorites
       if (favorites.find(n => n === product_id)) {
@@ -24,15 +23,8 @@ const Handler: NextApiHandler = async (req, res) => {
       } else {
         favorites.push(product_id)
       }
-
-      let newUserInfo = {
-        ...userInfo,
-        favorites
-      }
-      let filterCollectionInfo = collectionInfo.filter(ci => ci._id !== userInfo?._id)
-      filterCollectionInfo.push(newUserInfo)
       try {
-        await ConnectionJSON('usersInfo', filterCollectionInfo)
+        await collectionInfo.updateOne({ token }, { $set: { favorites } })
         res.status(200).json({ message: "Your favorite categories have been successfully changed", favorites })
       } catch (err) {
         res.status(500).json({ message: "have a problem in database!" })

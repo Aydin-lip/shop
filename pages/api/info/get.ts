@@ -11,8 +11,10 @@ const Handler: NextApiHandler = async (req, res) => {
 
     let {collectionToken, collectionInfo} = await UsersCollection()
 
-    let userToken = collectionToken.find(ct => ct.token === token)
-    let userInfo = collectionInfo.find(ci => ci.token === token)
+    let getUserToken = await collectionToken.find({ token }).toArray()
+    let getUserInfo = await collectionInfo.find({ token }).toArray()
+    let userToken = getUserToken[0]
+    let userInfo = getUserInfo[0]
 
     if (userToken && userInfo) {
       let user = {
