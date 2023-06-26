@@ -12,6 +12,7 @@ import IProducts from '@/models/products';
 import { useRouter } from 'next/router';
 import { GetStaticProps } from 'next';
 import ConnectionJSON from '@/db/json';
+import getAllProducts from '@/db/products';
 
 function a11yProps(index: number) {
   return {
@@ -111,7 +112,7 @@ const Detail = ({ products, productID }: { products: IProducts[], productID: IPr
 
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  let products: IProducts[] = await ConnectionJSON('products')
+  let products = await getAllProducts()
 
   let id = context.params?.id
   let productID = products.filter(p => p._id === id)[0]
@@ -131,7 +132,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
 }
 
 export const getStaticPaths = async () => {
-  let products: IProducts[] = await ConnectionJSON('products')
+  let products = await getAllProducts()
 
   let paths = products.map(p => ({ params: { id: p._id } }))
 
