@@ -5,7 +5,7 @@ import RelatedProduct from "@/components/cart/related";
 import StepperCart from "@/components/cart/stepper";
 import Layout from "@/components/layout";
 import { useAppContext } from "@/context/state";
-import CollectionDB from "@/db/mongoDB";
+import getAllProducts from "@/db/products";
 import IProducts from "@/models/products";
 import { Heading5 } from "@/mui/customize";
 import { useState } from "react";
@@ -42,8 +42,7 @@ const Cart = ({ products }: { products: IProducts[] }) => {
 }
 
 export const getStaticProps = async () => {
-  let product = await CollectionDB("product")
-  let products = await product.find({}).toArray()
+  let products = await getAllProducts()
 
   return {
     props: {
